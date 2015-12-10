@@ -1,0 +1,10 @@
+﻿<?xml version="1.0"?>
+<!-- 
+  Visual Studio global web project settings.
+-->
+<VisualWebDeveloper>
+
+  <comReferences>
+    <reference Name="interop.cdintfex" ID="{4856F14A-7516-11D3-BBE5-D53DCBD65107}\5.0\0"/>
+  </comReferences>
+</VisualWebDeveloper>

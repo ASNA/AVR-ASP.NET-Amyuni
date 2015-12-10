@@ -1,0 +1,189 @@
+﻿Using System
+Using System.Text
+Using System.IO
+
+BegClass PrintTest Access(*Public)
+    // Mainline code
+    // -------------
+    DclDB pgmDB   DBName("*Public/Cypress")
+    DclDB prntDB  DBName("*Public/Cypress")
+
+    DclDiskFile  Cust +
+        Type(*Input)  +
+        Org(*Indexed) +
+        Prefix(Cust_) +
+        File("Examples/CMastNewL2") +
+        DB(pgmDB) +
+        ImpOpen(*No)
+
+    // ASNA DataGate print file.            
+    DclPrintFile MyPrint +
+                 DB(prntDB) +
+                 File("Examples/CustList2") +
+                 ImpOpen(*No)
+
+    DclFld XmlFilePath        Type(*String)
+    DclFld OutputFilePath     Type(*String)
+    DclFld PDFValuesAvailable Type(*Boolean)
+    DclFld PrinterName        Type(*String)
+
+    // Constructors
+    // -------------
+
+    // Use this constructor when you want to print to default printer.
+    BegConstructor Access(*Public)
+    EndConstructor
+
+    // Use this constructor when you want to printer to non-default printer.
+    BegConstructor Access(*Public)
+        DclSrParm PrinterName  Type(*String)
+
+        *This.PrinterName = PrinterName
+    EndConstructor
+
+    // Use this constructor to print to Amyuni PDF printer.
+    // This constructor ensures the two paths exist. 
+    BegConstructor Access(*Public)
+        DclSrParm XmlFilePath     Type(*String)
+        DclSrParm OutputFilePath  Type(*String)
+
+        If (NOT Directory.Exists(XmlFilePath))
+            Throw *New System.ArgumentException(+
+                String.Format("'{0}' as XmlFilePath for Amyuni doesn't exist", XmlFilePath))
+        EndIf
+
+        If (NOT Directory.Exists(OutputFilePath))
+            Throw *New System.ArgumentException(+
+                String.Format("'{0}' as OutputFilePath for Amyuni doesn't exist", OutputFilePath))
+        EndIf
+
+        *This.XmlFilePath = XmlFilePath
+        *This.OutputFilePath = OutputFilePath
+ 
+        // Set PDFValuesAvialable to true. This value will later be 
+        // used to signal these paths have been set--they are 
+        // *absolutely* necessary for the Amyuni print driver.
+        *This.PDFValuesAvailable = *True
+    EndConstructor
+
+    // Methods
+    // -------------
+
+    // This public method prints the report to the default printer or, 
+    // if the single string argument constructor was used, the printer specified. 
+    BegSr PrintReportToPrinter Access(*Public)
+        PrintReport()
+    EndSr
+
+    // This routine is the top-level public method to call to
+    // print a report to PDF. Using this routine requires the
+    // path to the XML configuration file and the output path
+    // for PDF files has been provided in the XmlFilePath and
+    // OutputFilePath private class fields. Usually you'll
+    // populate these values through a constructor.
+    BegFunc PrintReportToPDF Type(*String) Access(*Public)
+        DclFld am          Type(ASNA.AmyUniPDF.Manager)
+        DclFld PDFFileName Type(*String)
+
+        // PDFValuesAvailable is true if the XMlFilePath and OutputFilePath
+        // fields define valid paths. The ASNA.Amyuni.Manager class is
+        // instanced passing the XmlFilePath and OutputFilePath and then the
+        // driver is started with StartDriver()
+        If (NOT *This.PDFValuesAvailable)
+            Throw *New System.InvalidOperationException("State not set for Amyuni PDF printing")
+        EndIf
+
+        am = *New ASNA.AmyUniPDF.Manager(*This.XmlFilePath, *This.OutputFilePath)
+        am.StartDriver()
+        // It is very important to set the DataGate print file (MyPrint in
+        // this case) Printer and ReportName properties to the two DriverInfo
+        // properties show.
+        MyPrint.Printer = am.DriverInfo.PrinterName
+        MyPrint.ReportName = am.DriverInfo.OutputFileName
+
+        // The PrintReport() prints the report. This routine, and routines it
+        // calls have no knowledge of the Amyuni PDF driver. Without the code
+        // in place to redirect to the Amyuni PDF dirver, calling PrintReport()
+        // would print to a real printer.
+        PrintReport()
+        PDFFileName = am.StopDriver()
+        // Return the name of the PDF file created. This value is only the file name and 
+        // its extension. This does not include its full path. You have the path file in
+        // the OutputFilePath field you need to reference the fully qualified name of 
+        // the PDF file.
+        LeaveSr PDFFileName
+    EndFunc
+
+    // This routine prints a DataGate report. It is not aware of 
+    // what the target printer (or virtual printer) is. 
+    BegSr PrintReport
+        OpenFiles()
+        WriteReport()
+        CloseFiles()
+    EndSr
+
+    BegSr OpenFiles Access(*Public)
+        MyPrint.Preview    = *False
+        MyPrint.PrintSetup = *False
+
+        Connect pgmDB
+        Connect prntDB
+        Open    Cust
+        Open    MyPrint
+    EndSr
+
+    BegSr CloseFiles Access(*Public)
+        Close Cust
+        Close MyPrint
+        Disconnect pgmDB
+        Disconnect prntDB
+    EndSr
+
+    BegSr WriteReport Access(*Public)
+        WriteHeading()
+        WriteBody()
+        WriteFooter()
+    EndSr
+
+    BegSr WriteHeading
+        Write Heading
+    EndSr
+
+    BegSr WriteBody
+        DclFld FooterMarginInInches Type(*Packed) Len(2, 1)
+        DclFld FooterPrintUnits     Type(*Integer4)
+
+        FooterMarginInInches = .5
+        FooterPrintUnits = ConvertInchesToPrintUnits(FooterMarginInInches)
+
+        // The DoWhile is commented out for testing purposes. This class
+        // prints just enough rows to test overflow. Change this
+        // for production work.
+        //DoWhile (NOT Cust.IsEof)
+
+        Do FromVal(1) ToVal(62)
+            CustomerName = Cust_CMName
+            Write Detail
+
+            If (FooterPrintUnits > 0) AND +
+               (MyPrint.FooterSize <= FooterPrintUnits) OR +
+               (MyPrint.InOverflow)
+                WriteFooter()
+                WriteHeading()
+            EndIf
+
+            Read Cust
+        EndDo
+    EndSr
+
+    BegSr WriteFooter
+        Write Footer
+    EndSr
+
+    BegFunc ConvertInchesToPrintUnits Type(*Integer4)
+        DclSrParm Inches Type(*Packed) Len(2,1)
+
+        LeaveSr Inches * 254
+    EndFunc
+
+EndClass

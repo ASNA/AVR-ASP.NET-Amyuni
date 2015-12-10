@@ -1,0 +1,61 @@
+﻿Using System
+Using System.Web
+Using System.Web.UI
+
+BegEnum AmyuniFileOptions
+    DclEnumFld DoNotPromptForFileName Value(1)
+    DclEnumFld UseFileNameSpecified   Value(2)
+EndEnum
+
+BegClass TestAmyuniPDF Partial(*Yes) Access(*Public) Extends(System.Web.UI.Page)
+    DclFld ConfigFolder Type(*String)
+    DclFld OutputFolder Type(*String)
+
+    BegSr Page_Load Access(*Private) Event(*This.Load)
+        DclSrParm sender Type(*Object)
+        DclSrParm e Type(System.EventArgs)
+
+        ConfigFolder = Server.MapPath('Configuration')
+        OutputFolder = Server.MapPath('PDFs')
+    EndSr
+
+	BegSr buttonPrintDF_Click Access(*Private) Event(*This.buttonPrintDF.Click)
+		DclSrParm sender Type(*Object)
+		DclSrParm e Type(System.EventArgs)
+
+        DclFld pt          Type(PrintTest) New(ConfigFolder, OutputFolder)
+        DclFld PDFFileName Type(*String)
+
+        PDFFileName = pt.PrintReportToPDF()
+        hyperlinkGetPDF.NavigateUrl = String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName)
+        hyperlinkGetPDF.Visible = *True
+
+        // If you prefer, go directly to the PDF.
+        // Response.Redirect(String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName))
+	EndSr
+
+    BegFunc GetAppRoot Type(*String)
+        DclFld AppPath Type(*String)
+        DclFld Context Type(HttpContext.Current)
+
+        //Getting the current context of HTTP request
+        Context = HttpContext.Current
+
+        //Checking the current context content
+        If (Context <> *Nothing)
+            //Formatting the fully qualified website url/name
+            AppPath = String.Format("{0}://{1}{2}{3}", +
+                                    Context.Request.Url.Scheme, +
+                                    Context.Request.Url.Host, +
+                                    (Context.Request.Url.Port = 80) ? String.Empty :  ":" + context.Request.Url.Port, +
+                                    Context.Request.ApplicationPath)
+        EndIf
+
+        If (NOT AppPath.EndsWith("/"))
+           AppPath += "/"
+        EndIf
+
+        LeaveSr AppPath
+    EndFunc
+
+EndClass
