@@ -1,4 +1,12 @@
-﻿Using System
+﻿
+// This class illustrates a example pattern for printing
+// to an ASNA DataGate printfile. While it has a few specific
+// elements that also enable it to print to a PDF print
+// driver ([the Amyuni PDF driver](https://www.amyuni.com/en/server/appserver/),
+// in this case), it can also be used to print to standard printers.
+// -----------------
+
+Using System
 Using System.Text
 Using System.IO
 
@@ -16,7 +24,7 @@ BegClass PrintTest Access(*Public)
         DB(pgmDB) +
         ImpOpen(*No)
 
-    // ASNA DataGate print file.            
+    // ASNA DataGate print file.
     DclPrintFile MyPrint +
                  DB(prntDB) +
                  File("Examples/CustList2") +
@@ -42,7 +50,7 @@ BegClass PrintTest Access(*Public)
     EndConstructor
 
     // Use this constructor to print to Amyuni PDF printer.
-    // This constructor ensures the two paths exist. 
+    // This constructor ensures the two paths exist.
     BegConstructor Access(*Public)
         DclSrParm XmlFilePath     Type(*String)
         DclSrParm OutputFilePath  Type(*String)
@@ -59,9 +67,9 @@ BegClass PrintTest Access(*Public)
 
         *This.XmlFilePath = XmlFilePath
         *This.OutputFilePath = OutputFilePath
- 
-        // Set PDFValuesAvialable to true. This value will later be 
-        // used to signal these paths have been set--they are 
+
+        // Set PDFValuesAvialable to true. This value will later be
+        // used to signal these paths have been set--they are
         // *absolutely* necessary for the Amyuni print driver.
         *This.PDFValuesAvailable = *True
     EndConstructor
@@ -69,8 +77,8 @@ BegClass PrintTest Access(*Public)
     // Methods
     // -------------
 
-    // This public method prints the report to the default printer or, 
-    // if the single string argument constructor was used, the printer specified. 
+    // This public method prints the report to the default printer or,
+    // if the single string argument constructor was used, the printer specified.
     BegSr PrintReportToPrinter Access(*Public)
         PrintReport()
     EndSr
@@ -107,22 +115,25 @@ BegClass PrintTest Access(*Public)
         // would print to a real printer.
         PrintReport()
         PDFFileName = am.StopDriver()
-        // Return the name of the PDF file created. This value is only the file name and 
+        // Return the name of the PDF file created. This value is only the file name and
         // its extension. This does not include its full path. You have the path file in
-        // the OutputFilePath field you need to reference the fully qualified name of 
+        // the OutputFilePath field you need to reference the fully qualified name of
         // the PDF file.
         LeaveSr PDFFileName
     EndFunc
 
-    // This routine prints a DataGate report. It is not aware of 
-    // what the target printer (or virtual printer) is. 
+    // This routine prints a DataGate report. It is not aware of
+    // what the target printer (or virtual printer) is.
     BegSr PrintReport
         OpenFiles()
         WriteReport()
         CloseFiles()
     EndSr
 
+    // Open the DB connections and files.
     BegSr OpenFiles Access(*Public)
+        // It's important to set these DataGate print file
+        // properties when printing in an ASP.NET app.
         MyPrint.Preview    = *False
         MyPrint.PrintSetup = *False
 
@@ -132,6 +143,7 @@ BegClass PrintTest Access(*Public)
         Open    MyPrint
     EndSr
 
+    // Close the files and DB connections.
     BegSr CloseFiles Access(*Public)
         Close Cust
         Close MyPrint
@@ -139,16 +151,19 @@ BegClass PrintTest Access(*Public)
         Disconnect prntDB
     EndSr
 
+    // Write the three sections of a standard report.
     BegSr WriteReport Access(*Public)
         WriteHeading()
         WriteBody()
         WriteFooter()
     EndSr
 
+    // Write the report heading.
     BegSr WriteHeading
         Write Heading
     EndSr
 
+    // Write the report body.
     BegSr WriteBody
         DclFld FooterMarginInInches Type(*Packed) Len(2, 1)
         DclFld FooterPrintUnits     Type(*Integer4)
@@ -156,15 +171,17 @@ BegClass PrintTest Access(*Public)
         FooterMarginInInches = .5
         FooterPrintUnits = ConvertInchesToPrintUnits(FooterMarginInInches)
 
-        // The DoWhile is commented out for testing purposes. This class
-        // prints just enough rows to test overflow. Change this
-        // for production work.
-        //DoWhile (NOT Cust.IsEof)
+        // `Do FromVal(1) ToVal(62)` is for testing purposes to ensure
+        // this class prints enough rows to test overflow. For production
+        // work, change this to:
+        // `DoWhile (NOT Cust.IsEof)`
 
         Do FromVal(1) ToVal(62)
             CustomerName = Cust_CMName
             Write Detail
 
+            // Check to see if overflow has been reached. If so
+            // write the foot and the heading again.
             If (FooterPrintUnits > 0) AND +
                (MyPrint.FooterSize <= FooterPrintUnits) OR +
                (MyPrint.InOverflow)
@@ -176,10 +193,14 @@ BegClass PrintTest Access(*Public)
         EndDo
     EndSr
 
+    // Write the report footer.
     BegSr WriteFooter
         Write Footer
     EndSr
 
+    // DataGate print files print units are used to track
+    // where on the page the current line being printed is.
+    // This routine converts printer units to inches.
     BegFunc ConvertInchesToPrintUnits Type(*Integer4)
         DclSrParm Inches Type(*Packed) Len(2,1)
 
