@@ -2,38 +2,58 @@
 Using System.Web
 Using System.Web.UI
 
-BegEnum AmyuniFileOptions
-    DclEnumFld DoNotPromptForFileName Value(1)
-    DclEnumFld UseFileNameSpecified   Value(2)
-EndEnum
-
+// This class shows a way to use the ASNA.AmyuniPDF library from an AVR ASP.NET
+// code-behind.
+// ----------------------------------------------------
 BegClass TestAmyuniPDF Partial(*Yes) Access(*Public) Extends(System.Web.UI.Page)
+    // Global (to the class) declarations
+    // ----------------------------------
+    // These two variables contain the configuration folder path and the
+    // output folder path.
     DclFld ConfigFolder Type(*String)
     DclFld OutputFolder Type(*String)
 
+    // Save folder locations in the page's Load event.
+    // -----------------------------------------------
     BegSr Page_Load Access(*Private) Event(*This.Load)
         DclSrParm sender Type(*Object)
         DclSrParm e Type(System.EventArgs)
 
+        // Get absolute paths to the two folder locations.
         ConfigFolder = Server.MapPath('Configuration')
         OutputFolder = Server.MapPath('PDFs')
     EndSr
 
-	BegSr buttonPrintDF_Click Access(*Private) Event(*This.buttonPrintDF.Click)
-		DclSrParm sender Type(*Object)
-		DclSrParm e Type(System.EventArgs)
+    // Print the report on a button click.
+    // -----------------------------------
+    BegSr buttonPrintDF_Click Access(*Private) Event(*This.buttonPrintDF.Click)
+        DclSrParm sender Type(*Object)
+        DclSrParm e Type(System.EventArgs)
 
+        // Instance the PrintTest class.
         DclFld pt          Type(PrintTest) New(ConfigFolder, OutputFolder)
         DclFld PDFFileName Type(*String)
 
+        // PrintReportToPDF() prints the report to PDF and returns the
+        // name of the PDF file--it doesn't not include the full path, just
+        // the file name and extension.
         PDFFileName = pt.PrintReportToPDF()
+        // Assign the full path to the PDF file as the NavigateUrl to the hyperlink.
         hyperlinkGetPDF.NavigateUrl = String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName)
+        // Show the hyperlink.
         hyperlinkGetPDF.Visible = *True
 
-        //* If you prefer, go directly to the PDF.
-        //* Response.Redirect(String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName))
-	EndSr
+        // Alternative, you could immediately redirect to the PDF.
+        //- If you prefer, go directly to the PDF.
+        //- Response.Redirect(String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName))
+    EndSr
 
+    // Helper function
+    // ---------------
+    // This function returns the virtual app root with an ending slash.
+    // This function should have been included by .NET! And it should also
+    // be parted away in a utility library.
+    // This code was ported from [C# code on StackOverflow](http://bit.ly/1SSNaNR).
     BegFunc GetAppRoot Type(*String)
         DclFld AppPath Type(*String)
         DclFld Context Type(HttpContext.Current)
@@ -51,6 +71,7 @@ BegClass TestAmyuniPDF Partial(*Yes) Access(*Public) Extends(System.Web.UI.Page)
                                     Context.Request.ApplicationPath)
         EndIf
 
+        // Make sure it ends with slash.
         If (NOT AppPath.EndsWith("/"))
            AppPath += "/"
         EndIf
@@ -59,3 +80,17 @@ BegClass TestAmyuniPDF Partial(*Yes) Access(*Public) Extends(System.Web.UI.Page)
     EndFunc
 
 EndClass
+
+//- Copyright ©2015 by ASNA. All Rights Reserved.
+//- ---------------------------------------------
+//- Permission to use, copy, modify, and distribute this software is hereby granted.
+//-
+//- IN NO EVENT SHALL ASNA BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR
+//- CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND
+//- ITS DOCUMENTATION, EVEN IF ASNA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//-
+//- ASNA SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+//- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE AND
+//- ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS PROVIDED "AS IS." ASNA HAS
+//- NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, TECHNICAL SUPPORT,
+//- OR MODIFICATIONS.
