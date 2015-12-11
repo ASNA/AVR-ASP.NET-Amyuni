@@ -30,8 +30,8 @@ BegClass TestAmyuniPDF Partial(*Yes) Access(*Public) Extends(System.Web.UI.Page)
         hyperlinkGetPDF.NavigateUrl = String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName)
         hyperlinkGetPDF.Visible = *True
 
-        // If you prefer, go directly to the PDF.
-        // Response.Redirect(String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName))
+        //* If you prefer, go directly to the PDF.
+        //* Response.Redirect(String.Format("{0}PDFs/{1}", GetAppRoot(), PDFFileName))
 	EndSr
 
     BegFunc GetAppRoot Type(*String)
