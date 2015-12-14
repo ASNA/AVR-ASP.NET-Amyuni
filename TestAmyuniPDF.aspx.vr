@@ -4,6 +4,12 @@ Using System.Web.UI
 
 // This class shows a way to use the ASNA.AmyuniPDF library from an AVR ASP.NET
 // code-behind.
+
+// A longtime friend of ASNA's, Forrest Forbus (that's right, [Elvis himself!](https://asna.com/us/articles/newsletter/2014/q4/asna-palooza-2014))
+// contributed lots of code, ideas, and inspiration for this code. Beyond contributing code,
+// it was his work that originally proved the Amyuni PDF print driver works with AVR for .NET.
+// Thank you for all your help, Forrest.
+
 // ----------------------------------------------------
 BegClass TestAmyuniPDF Partial(*Yes) Access(*Public) Extends(System.Web.UI.Page)
     // Global (to the class) declarations
