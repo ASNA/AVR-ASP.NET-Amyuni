@@ -17,6 +17,7 @@ Use the file name links above to see annotated source listings for these source 
 * The `PrintTest.vr` shown here is only an example--there are probably many other ways to print your report. However, the pattern shown here is a proven, simple pattern to use. 
 * The DB object in `PrintTest.vr` is exclusive to the `PrintTest` class and will therefore create a dedicated IBM i job for the duration of the report. To avoid this, use the `SingletonDB` pattern to pass a previously-instanced DB object into the `PrintTest` class's constructor.
 * This example performs the print task during the code-behind's postback--causing a delay for the user while the report is being printed. For larger reports is might be better to engineer a queue-like process that accepts a request for a report, queues it to the server, and then returns control immediately to the user. Once the PDF is created the app could send an email to the user with either a link to prepared PDF or the PDF itself (if the PDF isn't too large).
+* The print file this example uses is in the CustList2-rrintfile folder in APD format. The data file it uses is Examples/CMastNewL2 and that file is in the ASNA Examples database.
     
 ### Referencing the Amyuni ActiveX COM object
 
