@@ -39,18 +39,23 @@ BegClass PrintTest Access(*Public)
     // -------------
 
     // Use this constructor when you want to print to default printer.
+    // When created with this constructor call the PrintReportToPrinter()
+    // method to print the report.
     BegConstructor Access(*Public)
     EndConstructor
 
     // Use this constructor when you want to printer to non-default printer.
+    // When created with this constructor call the PrintReportToPrinter()
+    // method to print the report.
     BegConstructor Access(*Public)
         DclSrParm PrinterName  Type(*String)
 
         *This.PrinterName = PrinterName
     EndConstructor
 
-    // Use this constructor to print to Amyuni PDF printer.
-    // This constructor ensures the two paths exist.
+    // Use this constructor to print to Amyuni PDF printer. This constructor 
+    // ensures the two paths exist. When created with this method call the 
+    // PrintReportToPDF() method to print the report to PDF. 
     BegConstructor Access(*Public)
         DclSrParm XmlFilePath     Type(*String)
         DclSrParm OutputFilePath  Type(*String)
@@ -208,3 +213,18 @@ BegClass PrintTest Access(*Public)
     EndFunc
 
 EndClass
+
+
+//- Copyright ©2015 by ASNA. All Rights Reserved.
+//- ---------------------------------------------
+//- Permission to use, copy, modify, and distribute this software is hereby granted.
+//-
+//- IN NO EVENT SHALL ASNA BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR
+//- CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND
+//- ITS DOCUMENTATION, EVEN IF ASNA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//-
+//- ASNA SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+//- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE AND
+//- ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS PROVIDED "AS IS." ASNA HAS
+//- NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, TECHNICAL SUPPORT,
+//- OR MODIFICATIONS.
